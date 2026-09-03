@@ -1059,7 +1059,22 @@
 
         const imgContainers = ['.product__main-photos', '.product__photos', '.product__photo-container', '.product__photo', '.js-product-slide', '.product-image-column', '.js-swiper-product', '[data-store^="product-image-"]', '.product__media-wrapper', '.product-gallery__media', '.product__media', '.product-image-main', '.product-media-container', '[data-media-id]', '.product__media-item', '.product-gallery', '.product-single__media', '.media-gallery'];
 
+        // Quadro FIXO da galeria (Velaro/Dawn slider): o <slider-component> nao desliza,
+        // so as fotos dentro dele. Ancorar o selo AQUI o mantem no canto mesmo quando a
+        // troca de cor faz o carrossel deslizar pra foto da variacao nova.
+        function _stableFrame() {
+            return document.querySelector('slider-component.product-media-slider, slider-component, .product-media-slider');
+        }
+
         function tryPlaceTriggerBtn() {
+            // Velaro: preferimos o quadro fixo do slider (imune a troca de variacao).
+            var frame = _stableFrame();
+            if (frame && frame.offsetWidth > 180) {
+                if (window.getComputedStyle(frame).position === 'static') frame.style.position = 'relative';
+                if (window.getComputedStyle(frame).overflow === 'hidden') frame.style.overflow = 'visible';
+                frame.appendChild(openBtn);
+                return true;
+            }
             // Acha a imagem de PRODUTO (dentro de container de galeria, quadrada, fora de banner/hero).
             const BAD = '[class*="background-media"],[class*="banner"],[class*="hero"],[class*="newsletter"],[class*="slideshow__"],header,footer,[class*="logo"],[class*="rte"]';
             const GOOD = '.product-image-main, .image-wrap, .product__main-photos, .product__photos, .product__photo, .product__media, .product-single__media, [class*="product"][class*="photo"], [class*="product"][class*="media"], [class*="product"][class*="image"]';
@@ -1110,7 +1125,11 @@
         // entao ele so se MOVE pra galeria atual (sem duplicar).
         function _ensureSelo() {
             var b = document.getElementById('q-open-ia');
-            if (!b || b.offsetWidth === 0 || !b.isConnected) tryPlaceTriggerBtn();
+            var frame = _stableFrame();
+            // Recoloca se: sumiu, ficou 0px, desconectou, OU escapou do quadro fixo
+            // (ao trocar de cor o selo ficava preso numa foto que desliza pra fora da tela).
+            var fora = frame && b && b.parentElement !== frame;
+            if (!b || b.offsetWidth === 0 || !b.isConnected || fora) tryPlaceTriggerBtn();
         }
         _ensureSelo();
         setInterval(_ensureSelo, 700);   // recoloca no lazyload e apos troca de variacao
