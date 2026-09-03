@@ -736,7 +736,7 @@
                             <div class="q-face-corner q-face-corner-tr"></div>
                             <div class="q-face-corner q-face-corner-bl"></div>
                             <div class="q-face-corner q-face-corner-br"></div>
-                            <img id="q-pre-img" alt="Sua foto">
+                            <img id="q-pre-img" alt="Tu foto">
                             <div class="q-face-placeholder" id="q-face-placeholder">
                                 <i class="ph ph-user-circle" style="font-size:80px;color:#d4d4d4;"></i>
                             </div>
@@ -745,10 +745,10 @@
                         <!-- Upload buttons -->
                         <div class="q-upload-btns">
                             <button class="q-upload-btn" id="q-btn-camera">
-                                <i class="ph ph-camera"></i> Tirar foto
+                                <i class="ph ph-camera"></i> Tomar foto
                             </button>
                             <button class="q-upload-btn" id="q-btn-gallery">
-                                <i class="ph ph-image"></i> Da galeria
+                                <i class="ph ph-image"></i> Desde la galería
                             </button>
                             <input type="file" id="q-camera-input" accept="image/*" capture="user" style="display:none">
                             <input type="file" id="q-gallery-input" accept="image/*" style="display:none">
@@ -1162,7 +1162,7 @@
             inlineBtn.style.setProperty('background-color', '#fff', 'important');
             inlineBtn.style.setProperty('background-image', 'none', 'important');
             inlineBtn.style.setProperty('color', '#000', 'important');
-            inlineBtn.style.setProperty('border', '2px solid #111', 'important');   // mesma cor do Agregar al carrito
+            inlineBtn.style.setProperty('border', '1px solid #111', 'important');   // mesma cor do Agregar al carrito
             inlineBtn.style.setProperty('box-shadow', 'none', 'important');
             inlineBtn.style.setProperty('display', 'flex', 'important');
             inlineBtn.style.setProperty('align-items', 'center', 'important');
@@ -1173,7 +1173,7 @@
             if (!document.getElementById('q-provador-btn-style')) {
                 var _st = document.createElement('style');
                 _st.id = 'q-provador-btn-style';
-                _st.textContent = '.q-provador-trigger.q-provador-trigger::before,.q-provador-trigger.q-provador-trigger::after{background:none !important;background-color:transparent !important;background-image:none !important;box-shadow:none !important;border:0 !important;opacity:0 !important;content:none !important;}.q-provador-trigger svg{width:18px !important;height:18px !important;flex:0 0 auto;}.q-provador-trigger.q-provador-trigger{border:2px solid #111 !important;border-radius:25px !important;background:#fff !important;color:#111 !important;}';
+                _st.textContent = '.q-provador-trigger.q-provador-trigger::before,.q-provador-trigger.q-provador-trigger::after{background:none !important;background-color:transparent !important;background-image:none !important;box-shadow:none !important;border:0 !important;opacity:0 !important;content:none !important;}.q-provador-trigger svg{width:18px !important;height:18px !important;flex:0 0 auto;}.q-provador-trigger.q-provador-trigger{border:1px solid #111 !important;border-radius:25px !important;background:#fff !important;color:#111 !important;}';
                 document.head.appendChild(_st);
             }
             // O buyBtn costuma estar num flex row (quantidade + comprar) -> inserir como
@@ -1640,7 +1640,7 @@
                 '<button class="q-cam-mini q-cam-close" type="button" aria-label="Fechar">&#10005;</button>' +
                 '<div class="q-cam-controls">' +
                   '<button class="q-cam-mini q-cam-flip" type="button" aria-label="Virar câmera">&#8635;</button>' +
-                  '<button class="q-cam-shutter" type="button" aria-label="Tirar foto"></button>' +
+                  '<button class="q-cam-shutter" type="button" aria-label="Tomar foto"></button>' +
                   '<span style="width:46px"></span>' +
                 '</div>';
             document.body.appendChild(camOverlay);
@@ -1778,10 +1778,8 @@
 
 
 
-        phoneInput.addEventListener('input', function (e) {
-            let x = e.target.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,5})(\d{0,4})/);
-            e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
-            checkPhoneStep();
+        phoneInput.addEventListener('input', function () {
+            checkPhoneStep();   // Velaro: campo e-mail, sem mascara de telefone
         });
         // ── Contador de provas restantes (debounced) ──
         let _provasDebounce;
@@ -1799,7 +1797,7 @@
                 const used = Math.max(d.phone_count || 0, d.ip_count || 0, d.count || 0);
                 const restantes = Math.max(0, 3 - used);
                 if (restantes > 0) {
-                    const _txt = restantes + (restantes === 1 ? ' prova restante hoje' : ' provas restantes hoje');
+                    const _txt = restantes + (restantes === 1 ? ' prueba restante hoy' : ' pruebas restantes hoy');
                     _els.forEach(el => { el.textContent = _txt; el.classList.remove('is-warn'); });
                 } else {
                     _els.forEach(el => { el.textContent = ''; el.classList.remove('is-warn'); });   // limite: não avisa na tela inicial; o PIX aparece só ao enviar a foto
@@ -1898,7 +1896,7 @@
             pixPaymentId = payment_id;
             var _msg = document.getElementById('q-pix-status-msg');
             if (_msg) {
-                _msg.textContent = 'Pagamento confirmado!';
+                _msg.textContent = '¡Pago confirmado!';
                 _msg.className = 'q-pix-status q-pix-approved';
             }
             setTimeout(function () {
@@ -1911,7 +1909,7 @@
                         photoStep.style.display = 'flex';
                         var h = document.getElementById('q-validation-hint');
                         if (h) {
-                            h.textContent = '\u2705 Pagamento confirmado! Sube tu foto para gerar a prova.';
+                            h.textContent = '\u2705 ¡Pago confirmado! Sube tu foto para gerar a prova.';
                             h.classList.add('is-visible');
                         }
                     } catch (_) {}
