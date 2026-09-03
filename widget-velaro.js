@@ -2151,6 +2151,15 @@
                             }
                         }
                     } catch (_) {}
+                    // FALLBACK a prova de balas (temas Dawn/Shopify): se nada foi detectado
+                    // no DOM, pega a imagem do produto direto do endpoint /products/handle.js.
+                    if (allProdImgs.length === 0) {
+                        try {
+                            var _pj = await fetch(location.pathname.split('?')[0].replace(/\/$/, '') + '.js', { headers: { 'Accept': 'application/json' } }).then(function (r) { return r.json(); });
+                            var _pi0 = (_pj && (_pj.featured_image || (_pj.images && _pj.images[0]))) || '';
+                            if (_pi0) { if (_pi0.indexOf('//') === 0) _pi0 = 'https:' + _pi0; allProdImgs.push(_pi0); }
+                        } catch (_e) { }
+                    }
                     allProdImgs = allProdImgs.slice(0, 4);
                     // Guarda anti-"ALTA DEMANDA": só manda blobs que são REALMENTE imagem.
                     // Se uma URL resolver pra HTML/404 (ex: página do produto), o Gemini
