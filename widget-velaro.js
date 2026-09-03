@@ -1104,13 +1104,21 @@
             return false;
         }
 
-        if (!tryPlaceTriggerBtn()) {
-            // Lazyload: espera a foto carregar e ganhar tamanho (poll até ~15s). SEM fallback no canto.
-            let _tries = 0;
-            const _iv = setInterval(() => {
-                if (tryPlaceTriggerBtn() || ++_tries > 30) clearInterval(_iv);
-            }, 500);
+        // O selo tem que PERSISTIR: ao trocar a variacao, o tema (Dawn) redesenha a
+        // galeria e apaga o selo. Aqui garantimos que ele volte sempre — reancorando
+        // na foto NOVA da variacao. tryPlaceTriggerBtn faz appendChild do MESMO botao,
+        // entao ele so se MOVE pra galeria atual (sem duplicar).
+        function _ensureSelo() {
+            var b = document.getElementById('q-open-ia');
+            if (!b || b.offsetWidth === 0 || !b.isConnected) tryPlaceTriggerBtn();
         }
+        _ensureSelo();
+        setInterval(_ensureSelo, 700);   // recoloca no lazyload e apos troca de variacao
+        // Observa a area de midia do produto: troca de cor redesenha as fotos.
+        try {
+            var _galRoot = document.querySelector('.product__media-list, .product__media-wrapper, .product-gallery, .product__media-gallery, .product, main') || document.body;
+            new MutationObserver(function () { _ensureSelo(); }).observe(_galRoot, { childList: true, subtree: true });
+        } catch (e) { }
 
 
         const modal = document.getElementById('q-modal-ia');
