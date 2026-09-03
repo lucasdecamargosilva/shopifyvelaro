@@ -804,7 +804,7 @@
                                 <div class="q-result-prodname" id="q-result-prodname"></div>
                                 <div class="q-result-prodprice" id="q-result-prodprice"></div>
                                 <div class="q-result-installment" id="q-result-installment"></div>
-                                <div class="q-scarcity" id="q-scarcity" style="display:none;"><i class="ph-bold ph-fire"></i> APENAS <strong id="q-scarcity-n"></strong>&nbsp;UNIDADES RESTANTES</div>
+                                <div class="q-scarcity" id="q-scarcity" style="display:none;"><i class="ph-bold ph-fire"></i> ¡SOLO QUEDAN <strong id="q-scarcity-n"></strong>&nbsp;UNIDADES!</div>
                             </div>
                             <div class="q-seals" id="q-seals" style="display:none;">
                                 <div class="q-seal"><i class="ph-fill ph-shield-check"></i><span>Compra<br>Segura</span></div>
