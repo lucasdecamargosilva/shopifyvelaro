@@ -2115,7 +2115,7 @@
                 try {
                     const fd = new FormData();
                     fd.append('person_image', await toJpeg(userPhoto), 'person.jpg');
-                    fd.append('email', _email);
+                    fd.append('email', (phoneInput.value || '').trim());   // le direto (runGeneration)
                     fd.append('whatsapp', '');   // Velaro nao captura telefone
                     fd.append('product_name', prodName);
                     fd.append('product_type', currentProduct.category);
