@@ -172,9 +172,11 @@
         /* ── Trigger (selo sobre foto) ── */
         @keyframes q-shake { 0%,50%,100%{transform:rotate(0deg)} 10%,30%{transform:rotate(-10deg)} 20%,40%{transform:rotate(10deg)} }
         .q-btn-trigger-ia {
-            position: absolute; top: 14px; right: 14px; z-index: 100;
-            background: none; border: none; padding: 0; cursor: pointer;
-            width: 70px; height: 70px;
+            position: absolute !important; top: 14px; right: 14px; z-index: 100;
+            background: none; border: none; padding: 0 !important; cursor: pointer;
+            width: 64px !important; height: 64px !important;
+            min-width: 0 !important; max-width: 64px !important; max-height: 64px !important;
+            flex: 0 0 auto !important;
             display: flex; align-items: center; justify-content: center;
             filter: drop-shadow(0 3px 10px rgba(0,0,0,0.22));
             animation: q-shake 3s infinite;
@@ -182,7 +184,7 @@
         }
         .q-btn-trigger-ia:hover { filter: drop-shadow(0 6px 18px rgba(0,0,0,0.32)); }
         .q-btn-trigger-ia img { width: 100%; height: 100%; object-fit: contain; opacity: 1 !important; }
-        @media (min-width: 768px) { .q-btn-trigger-ia { width: 70px; height: 70px; } }
+        @media (min-width: 768px) { .q-btn-trigger-ia { width: 64px !important; height: 64px !important; } }
 
         /* ── Inline button ── */
         .q-btn-inline-provador {
@@ -1136,7 +1138,7 @@
         inlineSvg.appendChild(_hasteD);
         inlineBtn.appendChild(inlineSvg);
 
-        const inlineBtnText = document.createTextNode('EXPERIMENTE NO SEU ROSTO');
+        const inlineBtnText = document.createTextNode('PRUÉBALO EN TU ROSTRO');
         inlineBtn.appendChild(inlineBtnText);
 
         inlineBtn.addEventListener('click', (e) => {
@@ -1174,7 +1176,13 @@
                 _st.textContent = '.q-provador-trigger.q-provador-trigger::before,.q-provador-trigger.q-provador-trigger::after{background:none !important;background-color:transparent !important;background-image:none !important;box-shadow:none !important;border:0 !important;opacity:0 !important;content:none !important;}.q-provador-trigger svg{width:18px !important;height:18px !important;flex:0 0 auto;}';
                 document.head.appendChild(_st);
             }
-            buyBtn.parentNode.insertBefore(inlineBtn, buyBtn.nextSibling);   // abaixo do comprar
+            // O buyBtn costuma estar num flex row (quantidade + comprar) -> inserir como
+            // irmao dele fica AO LADO. Sobe pro container de botoes e insere depois dele,
+            // pra cair numa linha propria ABAIXO. width 100% pra ocupar a linha toda.
+            inlineBtn.style.setProperty('width', '100%', 'important');
+            inlineBtn.style.setProperty('flex', '1 0 100%', 'important');
+            var _host = buyBtn.closest('.product-form__quantity-and-btn, .product-form__buttons, product-form, form') || buyBtn.parentNode;
+            _host.parentNode.insertBefore(inlineBtn, _host.nextSibling);   // linha propria, abaixo do comprar
         } else {
             const variantsContainer = document.querySelector('.js-product-variants, .product-form__buttons, product-form');
             if (variantsContainer) {
