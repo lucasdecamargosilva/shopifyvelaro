@@ -1092,6 +1092,15 @@
                 anchor.appendChild(openBtn);
                 return true;
             }
+            // Fallback (temas Dawn/Shopify novos): a foto pode nao ser um <img> grande
+            // detectavel. Ancora direto no 1o container de media do produto.
+            var _mc = document.querySelector('.product__media-item, .product__media-wrapper, .product__media, .product-gallery__media, [class*="product__media"], .product-single__media');
+            if (_mc && _mc.offsetWidth > 180 && !_mc.querySelector('#q-open-ia')) {
+                if (window.getComputedStyle(_mc).position === 'static') _mc.style.position = 'relative';
+                if (window.getComputedStyle(_mc).overflow === 'hidden') _mc.style.overflow = 'visible';
+                _mc.appendChild(openBtn);
+                return true;
+            }
             return false;
         }
 
