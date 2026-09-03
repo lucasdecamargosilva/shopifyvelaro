@@ -172,7 +172,7 @@
         /* ── Trigger (selo sobre foto) ── */
         @keyframes q-shake { 0%,50%,100%{transform:rotate(0deg)} 10%,30%{transform:rotate(-10deg)} 20%,40%{transform:rotate(10deg)} }
         .q-btn-trigger-ia {
-            position: absolute !important; top: 14px; right: 14px; z-index: 100;
+            position: absolute !important; top: 14px !important; right: 14px !important; left: auto !important; bottom: auto !important; z-index: 100;
             background: none; border: none; padding: 0 !important; cursor: pointer;
             width: 64px !important; height: 64px !important;
             min-width: 0 !important; max-width: 64px !important; max-height: 64px !important;
@@ -1162,7 +1162,7 @@
             inlineBtn.style.setProperty('background-color', '#fff', 'important');
             inlineBtn.style.setProperty('background-image', 'none', 'important');
             inlineBtn.style.setProperty('color', '#000', 'important');
-            inlineBtn.style.setProperty('border', 'none', 'important');
+            inlineBtn.style.setProperty('border', '2px solid #111', 'important');   // mesma cor do Agregar al carrito
             inlineBtn.style.setProperty('box-shadow', 'none', 'important');
             inlineBtn.style.setProperty('display', 'flex', 'important');
             inlineBtn.style.setProperty('align-items', 'center', 'important');
@@ -1183,6 +1183,13 @@
             inlineBtn.style.setProperty('flex', '1 0 100%', 'important');
             var _host = buyBtn.closest('.product-form__quantity-and-btn, .product-form__buttons, product-form, form') || buyBtn.parentNode;
             _host.parentNode.insertBefore(inlineBtn, _host.nextSibling);   // linha propria, abaixo do comprar
+            try {
+                var _sync = function () {
+                    var _bw = buyBtn.getBoundingClientRect().width;
+                    if (_bw > 140) inlineBtn.style.setProperty('width', Math.round(_bw) + 'px', 'important');
+                };
+                _sync(); setTimeout(_sync, 800); window.addEventListener('resize', _sync);
+            } catch (e) {}
         } else {
             const variantsContainer = document.querySelector('.js-product-variants, .product-form__buttons, product-form');
             if (variantsContainer) {
