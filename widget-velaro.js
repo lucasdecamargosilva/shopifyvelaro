@@ -1087,7 +1087,7 @@
             }
             if (best && bestHost) {
                 // Ancora no frame ESTÁVEL da galeria se existir (carrossel), senão no container da imagem.
-                const anchor = best.closest(STABLE) || bestHost;
+                const anchor = bestHost;   // canto da FOTO visivel (STABLE largo jogava o selo pra fora)
                 if (window.getComputedStyle(anchor).position === 'static') anchor.style.position = 'relative';
                 anchor.appendChild(openBtn);
                 return true;
@@ -1173,7 +1173,7 @@
             if (!document.getElementById('q-provador-btn-style')) {
                 var _st = document.createElement('style');
                 _st.id = 'q-provador-btn-style';
-                _st.textContent = '.q-provador-trigger.q-provador-trigger::before,.q-provador-trigger.q-provador-trigger::after{background:none !important;background-color:transparent !important;background-image:none !important;box-shadow:none !important;border:0 !important;opacity:0 !important;content:none !important;}.q-provador-trigger svg{width:18px !important;height:18px !important;flex:0 0 auto;}';
+                _st.textContent = '.q-provador-trigger.q-provador-trigger::before,.q-provador-trigger.q-provador-trigger::after{background:none !important;background-color:transparent !important;background-image:none !important;box-shadow:none !important;border:0 !important;opacity:0 !important;content:none !important;}.q-provador-trigger svg{width:18px !important;height:18px !important;flex:0 0 auto;}.q-provador-trigger.q-provador-trigger{border:2px solid #111 !important;border-radius:25px !important;background:#fff !important;color:#111 !important;}';
                 document.head.appendChild(_st);
             }
             // O buyBtn costuma estar num flex row (quantidade + comprar) -> inserir como
