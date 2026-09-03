@@ -1182,7 +1182,7 @@
             if (!document.getElementById('q-provador-btn-style')) {
                 var _st = document.createElement('style');
                 _st.id = 'q-provador-btn-style';
-                _st.textContent = '.q-provador-trigger.q-provador-trigger::before,.q-provador-trigger.q-provador-trigger::after{background:none !important;background-color:transparent !important;background-image:none !important;box-shadow:none !important;border:0 !important;opacity:0 !important;content:none !important;}.q-provador-trigger svg{width:18px !important;height:18px !important;flex:0 0 auto;}.q-provador-trigger.q-provador-trigger{border:1px solid #111 !important;border-radius:25px !important;background:#fff !important;color:#111 !important;}';
+                _st.textContent = '.q-provador-trigger.q-provador-trigger::before,.q-provador-trigger.q-provador-trigger::after{background:none !important;background-color:transparent !important;background-image:none !important;box-shadow:none !important;border:0 !important;opacity:0 !important;content:none !important;}.q-provador-trigger svg{width:18px !important;height:18px !important;flex:0 0 auto;}.q-provador-trigger.q-provador-trigger{border:1px solid #111 !important;background:#fff !important;color:#111 !important;}';
                 document.head.appendChild(_st);
             }
             // O buyBtn costuma estar num flex row (quantidade + comprar) -> inserir como
@@ -1196,6 +1196,10 @@
                 var _sync = function () {
                     var _bw = buyBtn.getBoundingClientRect().width;
                     if (_bw > 140) inlineBtn.style.setProperty('width', Math.round(_bw) + 'px', 'important');
+                    try {
+                        var _br = getComputedStyle(buyBtn).borderRadius;
+                        if (_br) inlineBtn.style.setProperty('border-radius', _br, 'important');
+                    } catch (e) {}
                 };
                 _sync(); setTimeout(_sync, 800); window.addEventListener('resize', _sync);
             } catch (e) {}
