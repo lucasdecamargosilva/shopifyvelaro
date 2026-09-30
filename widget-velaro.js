@@ -1317,6 +1317,33 @@
             } catch (e) { return ''; }
         }
 
+        // Fotos da MESMA COR da variante escolhida (packshot + foto no rosto + lateral).
+        // Na galeria da Velaro as fotos vêm agrupadas por cor: a foto de destaque da
+        // variante e, logo depois, as fotos extras dela, até começar a próxima cor.
+        async function selectedVariantGroupUrls() {
+            try {
+                if (!(await selectedVariantImgUrl())) return [];   // também carrega o cache do produto
+                var prod = _plProductJsonCache, vid = _plSelectedVariantId();
+                if (!prod || !prod.variants || !prod.images) return [];
+                var v = prod.variants.filter(function (x) { return String(x.id) === String(vid); })[0];
+                var pos = v && v.featured_image && v.featured_image.position;
+                if (!pos) return [];
+                var inicios = {};
+                prod.variants.forEach(function (x) { if (x.featured_image && x.featured_image.position) inicios[x.featured_image.position] = 1; });
+                // Galeria fora do padrão (fotos extras ANTES da foto da cor, ex.: Aero): não arrisca misturar cores.
+                if (!inicios[1]) return [];
+                var out = [];
+                for (var p = pos; p <= prod.images.length; p++) {
+                    if (p !== pos && inicios[p]) break;          // começou a próxima cor
+                    var src = String(prod.images[p - 1] || '');
+                    if (!src) continue;
+                    if (src.indexOf('//') === 0) src = 'https:' + src;
+                    out.push(upgradeImgUrl(src.replace(/^http:\/\//i, 'https://')));
+                }
+                return out;
+            } catch (e) { return []; }
+        }
+
         // Temas Shopify põem a foto real no srcset (o src é placeholder/lazy-load). Pega a maior.
         function largestSrc(img) {
             var ss = img.getAttribute('srcset') || img.getAttribute('data-srcset') || '';
@@ -2166,6 +2193,17 @@
                     // 1ª = prodImg (escolhida pelo cliente ou default); demais = extractImages() exceto a 1ª.
                     let allProdImgs = [];
                     if (prodImg) allProdImgs.push(prodImg);
+                    // Com a cor escolhida: junta as outras fotos DESSA cor (ex.: modelo usando o óculos).
+                    if (variantImg) {
+                        try {
+                            const grupo = await selectedVariantGroupUrls();
+                            for (const u of grupo) {
+                                const cleanU = String(u || '').split('?')[0];
+                                if (!allProdImgs.some(p => String(p).split('?')[0] === cleanU)) allProdImgs.push(u);
+                            }
+                            console.log('[PL Velaro] fotos da cor escolhida:', allProdImgs.length);
+                        } catch (_) {}
+                    }
                     // Só junta extras da galeria quando NÃO temos a imagem da variante:
                     // a galeria tem fotos de todas as cores, então mandar extras junto da
                     // cor certa contaminaria a geração. Com variantImg, mandamos só ela.
