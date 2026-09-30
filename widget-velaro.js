@@ -1,4 +1,7 @@
 (function () {
+    // Carrega uma vez só (ScriptTag da Shopify + GTM podem trazer o mesmo arquivo)
+    if (window.__PL_VELARO_LOADED__) return;
+    window.__PL_VELARO_LOADED__ = true;
     // ─── KILL SWITCH ─────────────────────────────────────────────────────────────
     // Backend segue ativo independente desta flag.
     // Para desligar o provador no front: mudar para true (e dar deploy no github.io/shopifycand).
