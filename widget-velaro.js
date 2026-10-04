@@ -1534,6 +1534,30 @@
             } catch (e) {}
             return '';
         }
+        // 04/10/2026: se a COR escolhida tem foto no rosto, ela vira a 1ª referência (encaixe real);
+        // o packshot da mesma cor vem logo depois (garante a cor). Nunca usa rosto de outra cor.
+        async function rostoDaCorSelecionada(grupo) {
+            try {
+                if (!grupo || grupo.length < 2) return '';
+                var det = await getFaceDetector();
+                if (!det) return '';
+                for (var i = 1; i < grupo.length; i++) {          // [0] = packshot da variante
+                    var img = await _loadCorsImg(grupo[i]);
+                    if (img && await _imgHasFace(det, img)) return grupo[i];
+                }
+            } catch (e) {}
+            return '';
+        }
+        // Ordem das referências da cor escolhida: rosto (se houver) → packshot → resto da cor.
+        async function refsDaCorSelecionada() {
+            var grupo = await selectedVariantGroupUrls();
+            if (!grupo.length) { var v = await selectedVariantImgUrl(); return v ? [v] : []; }
+            var rosto = await Promise.race([rostoDaCorSelecionada(grupo), new Promise(function (r) { setTimeout(function () { r(''); }, 5000); })]);
+            if (!rosto) return grupo;
+            return [rosto].concat(grupo.filter(function (u) { return u !== rosto; }));
+        }
+        try { window.__plVelaroRefs = refsDaCorSelecionada; } catch (e) {}   // debug: ver as fotos que vão na prova
+
         function startFaceDetect() {
             if (faceDetectPromise) return faceDetectPromise;
             faceDetectPromise = detectFacePhoto(productGalleryUrls(8)).then(function (u) {
@@ -2197,11 +2221,15 @@
                     // Coleta até 4 fotos do produto: 1ª como binary (compat), 2ª-4ª como base64 text.
                     // 1ª = prodImg (escolhida pelo cliente ou default); demais = extractImages() exceto a 1ª.
                     let allProdImgs = [];
-                    if (prodImg) allProdImgs.push(prodImg);
-                    // Com a cor escolhida: junta as outras fotos DESSA cor (ex.: modelo usando o óculos).
+                    // Com a cor escolhida: foto no ROSTO dessa cor primeiro (se existir), depois o packshot
+                    // e as outras fotos DESSA cor. Sem foto no rosto da cor, segue packshot primeiro.
+                    let _refsCor = [];
+                    if (variantImg) { try { _refsCor = await refsDaCorSelecionada(); } catch (_) { _refsCor = []; } }
+                    if (_refsCor.length) allProdImgs.push(_refsCor[0]);
+                    else if (prodImg) allProdImgs.push(prodImg);
                     if (variantImg) {
                         try {
-                            const grupo = await selectedVariantGroupUrls();
+                            const grupo = _refsCor.length ? _refsCor : await selectedVariantGroupUrls();
                             for (const u of grupo) {
                                 const cleanU = String(u || '').split('?')[0];
                                 if (!allProdImgs.some(p => String(p).split('?')[0] === cleanU)) allProdImgs.push(u);
