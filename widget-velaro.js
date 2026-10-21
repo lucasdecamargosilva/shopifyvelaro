@@ -6,6 +6,7 @@
     // Backend segue ativo independente desta flag.
     // Para desligar o provador no front: mudar para true (e dar deploy no github.io/shopifycand).
     var PROVADOR_OFF = false;
+    var PL_SO_SELO = true;   // Velaro (21/10/2026, Lucas): só o selo sobre a foto, sem o botão abaixo do comprar
 
     function toJpeg(file){return new Promise(function(res){try{var img=new Image();var u=URL.createObjectURL(file);img.onload=function(){URL.revokeObjectURL(u);var w=img.naturalWidth||img.width,h=img.naturalHeight||img.height;if(!w||!h){res(file);return;}var sc=Math.min(1,1280/Math.max(w,h));var cw=Math.round(w*sc),ch=Math.round(h*sc);var c=document.createElement('canvas');c.width=cw;c.height=ch;c.getContext('2d').drawImage(img,0,0,cw,ch);c.toBlob(function(b){res(b||file);},'image/jpeg',0.92);};img.onerror=function(){URL.revokeObjectURL(u);res(file);};img.src=u;}catch(e){res(file);}});}
 
@@ -1180,7 +1181,7 @@
         inlineBtn.appendChild(inlineSvg);
 
         const inlineBtnText = document.createTextNode('PRUÉBALO EN TU ROSTRO');
-        inlineBtn.appendChild(inlineBtnText);
+        if (!PL_SO_SELO) inlineBtn.appendChild(inlineBtnText);
 
         inlineBtn.addEventListener('click', (e) => {
             window.__plBtnSrc = 'carrinho';
@@ -1223,7 +1224,7 @@
             inlineBtn.style.setProperty('width', '100%', 'important');
             inlineBtn.style.setProperty('flex', '1 0 100%', 'important');
             var _host = buyBtn.closest('.product-form__quantity-and-btn, .product-form__buttons, product-form, form') || buyBtn.parentNode;
-            _host.parentNode.insertBefore(inlineBtn, _host.nextSibling);   // linha propria, abaixo do comprar
+            if (!PL_SO_SELO) _host.parentNode.insertBefore(inlineBtn, _host.nextSibling);   // linha propria, abaixo do comprar
             try {
                 var _sync = function () {
                     var _bw = buyBtn.getBoundingClientRect().width;
@@ -1238,7 +1239,7 @@
         } else {
             const variantsContainer = document.querySelector('.js-product-variants, .product-form__buttons, product-form');
             if (variantsContainer) {
-                variantsContainer.parentNode.insertBefore(inlineBtn, variantsContainer.nextSibling);
+                if (!PL_SO_SELO) variantsContainer.parentNode.insertBefore(inlineBtn, variantsContainer.nextSibling);
             }
         }
         const genBtn      = document.getElementById('q-btn-generate');
