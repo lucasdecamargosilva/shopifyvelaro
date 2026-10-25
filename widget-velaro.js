@@ -32,7 +32,7 @@ setInterval(function(){var el=document.getElementById('q-step-error');if(!el)ret
     // Backend segue ativo independente desta flag.
     // Para desligar o provador no front: mudar para true (e dar deploy no github.io/shopifycand).
     var PROVADOR_OFF = false;
-    var PL_SO_SELO = true;   // Velaro (21/10/2026, Lucas): só o selo sobre a foto, sem o botão abaixo do comprar
+    var PL_SO_SELO = false;  // Velaro: 24/10/2026 o Lucas pediu o botão de volta abaixo do comprar (o selo sobre a foto continua)
 
     function toJpeg(file){return new Promise(function(res){try{var img=new Image();var u=URL.createObjectURL(file);img.onload=function(){URL.revokeObjectURL(u);var w=img.naturalWidth||img.width,h=img.naturalHeight||img.height;if(!w||!h){res(file);return;}var sc=Math.min(1,1280/Math.max(w,h));var cw=Math.round(w*sc),ch=Math.round(h*sc);var c=document.createElement('canvas');c.width=cw;c.height=ch;c.getContext('2d').drawImage(img,0,0,cw,ch);c.toBlob(function(b){res(b||file);},'image/jpeg',0.92);};img.onerror=function(){URL.revokeObjectURL(u);res(file);};img.src=u;}catch(e){res(file);}});}
 
