@@ -40,10 +40,73 @@ setInterval(function(){var el=document.getElementById('q-step-error');if(!el)ret
     // para nao mexer nos ~4 pontos que chamam isValidBRPhone(nums)).
     function isValidBRPhone() {
         var v = ((document.getElementById('q-phone') || {}).value || '').trim();
-        var ok = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
-        var el = document.getElementById('q-phone-error');
-        if (el && !ok && v.length > 0) el.textContent = 'Correo electrónico inválido';
+        var ok, el = document.getElementById('q-phone-error');
+        if (PL_MODO === 'whatsapp') {
+            var d = v.replace(/\D/g, ''), t = plVelaroWhats();
+            ok = d.length >= 6 && d.length <= 13 && t.length >= 8 && t.length <= 15;
+            if (el && !ok && v.length > 0) el.textContent = 'Número de WhatsApp inválido';
+        } else {
+            ok = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+            if (el && !ok && v.length > 0) el.textContent = 'Correo electrónico inválido';
+        }
         return ok;
+    }
+
+    // ─── Contato por país (28/10/2026, pedido do Lucas) ───
+    // A Velaro vende para vários países: coleta WhatsApp de todo mundo, menos de quem
+    // entra dos Estados Unidos (lá coleta e-mail). País pelo IP via
+    // /browsing_context_suggestions.json da Shopify (Shopify.country é o mercado, não o IP).
+    var PL_MODO = 'whatsapp';
+    var PL_PAIS = '';
+    var PL_DDI = { AR:'54', BO:'591', BR:'55', CL:'56', CO:'57', CR:'506', CU:'53', DO:'1', EC:'593', SV:'503', GT:'502', HN:'504', MX:'52', NI:'505', PA:'507', PY:'595', PE:'51', PR:'1', UY:'598', VE:'58', ES:'34', PT:'351', CA:'1', GB:'44', FR:'33', IT:'39', DE:'49' };
+    var PL_DDI_NOMES = [['AR','Argentina'],['BO','Bolivia'],['BR','Brasil'],['CL','Chile'],['CO','Colombia'],['CR','Costa Rica'],['CU','Cuba'],['EC','Ecuador'],['SV','El Salvador'],['ES','España'],['GT','Guatemala'],['HN','Honduras'],['MX','México'],['NI','Nicaragua'],['PA','Panamá'],['PY','Paraguay'],['PE','Perú'],['PR','Puerto Rico'],['DO','Rep. Dominicana'],['UY','Uruguay'],['VE','Venezuela'],['PT','Portugal'],['CA','Canadá'],['GB','Reino Unido'],['FR','Francia'],['IT','Italia'],['DE','Alemania']];
+    function plVelaroWhats() {
+        var sel = document.getElementById('q-ddi');
+        var d = ((document.getElementById('q-phone') || {}).value || '').replace(/\D/g, '').replace(/^0+/, '');
+        var ddi = sel ? sel.value : '';
+        if (!d) return '';
+        if (ddi && d.indexOf(ddi) === 0 && d.length > 10) return d;   // já digitou com o código do país
+        return ddi + d;
+    }
+    var plPaisPronto = (function () {
+        try { var c = sessionStorage.getItem('pl_velaro_pais'); if (c) { PL_PAIS = c; PL_MODO = c === 'US' ? 'email' : 'whatsapp'; return Promise.resolve(c); } } catch (_) {}
+        return Promise.race([
+            fetch('/browsing_context_suggestions.json', { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (j) { return ((j.detected_values || {}).country || {}).handle || ''; }),
+            new Promise(function (r) { setTimeout(function () { r(''); }, 2500); })
+        ]).catch(function () { return ''; }).then(function (c) {
+            PL_PAIS = c || '';
+            PL_MODO = PL_PAIS === 'US' ? 'email' : 'whatsapp';
+            try { if (c) sessionStorage.setItem('pl_velaro_pais', c); } catch (_) {}
+            return c;
+        });
+    })();
+    function plAplicaCampoContato() {
+        var inp = document.getElementById('q-phone'); if (!inp) return;
+        var wrap = inp.closest('.q-phone-wrap'); var lbl = wrap && wrap.querySelector('.q-field-label');
+        var err = document.getElementById('q-phone-error');
+        var linha = document.getElementById('q-ddi-linha');
+        if (PL_MODO === 'email') {
+            if (linha) { linha.parentNode.insertBefore(inp, linha); linha.remove(); }
+            inp.type = 'email'; inp.placeholder = 'tu@correo.com'; inp.maxLength = 80; inp.autocomplete = 'email'; inp.inputMode = 'email';
+            if (lbl) lbl.innerHTML = 'Tu correo electrónico<span class="q-required-mark">*</span>';
+            if (err) err.textContent = 'Correo electrónico inválido';
+            return;
+        }
+        inp.type = 'tel'; inp.placeholder = 'Tu número de WhatsApp'; inp.maxLength = 20; inp.autocomplete = 'tel-national'; inp.inputMode = 'tel';
+        if (lbl) lbl.innerHTML = 'Tu WhatsApp<span class="q-required-mark">*</span>';
+        if (err) err.textContent = 'Número de WhatsApp inválido';
+        if (!linha) {
+            linha = document.createElement('div'); linha.id = 'q-ddi-linha';
+            linha.style.cssText = 'display:flex;gap:8px;align-items:stretch;';
+            var sel = document.createElement('select'); sel.id = 'q-ddi'; sel.className = 'q-input'; sel.setAttribute('aria-label', 'Código del país');
+            sel.style.cssText = 'flex:0 0 112px;width:112px;padding-left:10px;padding-right:6px;';
+            var pais = PL_DDI[PL_PAIS] ? PL_PAIS : 'MX';
+            PL_DDI_NOMES.forEach(function (x) { var o = document.createElement('option'); o.value = PL_DDI[x[0]]; o.textContent = x[0] + ' +' + PL_DDI[x[0]]; o.title = x[1]; if (x[0] === pais) o.selected = true; sel.appendChild(o); });
+            var outro = document.createElement('option'); outro.value = ''; outro.textContent = 'Otro (+)'; sel.appendChild(outro);
+            inp.parentNode.insertBefore(linha, inp); linha.appendChild(sel); linha.appendChild(inp);
+            inp.style.flex = '1 1 auto'; inp.style.minWidth = '0';
+            sel.addEventListener('change', function () { inp.dispatchEvent(new Event('input', { bubbles: true })); });
+        }
     }
 
 
@@ -919,7 +982,7 @@ setInterval(function(){var el=document.getElementById('q-step-error');if(!el)ret
     function buyNow() {
         // Tracking: registra o clique em "Comprar ahora" (marca carrinho_adicionado na prova)
         try {
-            var _tp = '';   // Velaro: sem telefone
+            var _tp = PL_MODO === 'whatsapp' ? plVelaroWhats() : '';
             var _td = (document.querySelector('h1.product__title,.product-single__title,h1') || {}).innerText || document.title || '';
             fetch('https://n8n.segredosdodrop.com/webhook/pl-provador-buy-click', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone: _tp, origin: location.origin, produto: _td }) }).catch(function () {});
         } catch (e) {}
@@ -1280,12 +1343,13 @@ setInterval(function(){var el=document.getElementById('q-step-error');if(!el)ret
         const cameraInput = document.getElementById('q-camera-input');
         const galleryInput= document.getElementById('q-gallery-input');
         const phoneInput  = document.getElementById('q-phone');
+        plAplicaCampoContato(); plPaisPronto.then(plAplicaCampoContato);
         // ── Lembra o WhatsApp da última prova (localStorage), igual ao resto da frota (20/10/2026) ──
         try {
             const _plSaved = localStorage.getItem('pl_last_phone');
-            if (phoneInput && _plSaved && !phoneInput.value) setTimeout(function () { if (!phoneInput.value) { phoneInput.value = _plSaved; phoneInput.dispatchEvent(new Event('input', { bubbles: true })); } }, 0);   // depois dos listeners (máscara)
+            if (phoneInput && _plSaved && !phoneInput.value) setTimeout(function () { if (PL_MODO === 'whatsapp' && !phoneInput.value) { phoneInput.value = _plSaved; phoneInput.dispatchEvent(new Event('input', { bubbles: true })); } }, 0);   // depois dos listeners (máscara)
         } catch (_) {}
-        if (phoneInput) phoneInput.addEventListener('blur', function () { const d = phoneInput.value.replace(/\D/g, ''); if (d.length >= 8) { try { localStorage.setItem('pl_last_phone', d); } catch (_) {} } });
+        if (phoneInput) phoneInput.addEventListener('blur', function () { const d = phoneInput.value.replace(/\D/g, ''); if (PL_MODO === 'whatsapp' && d.length >= 6) { try { localStorage.setItem('pl_last_phone', d); } catch (_) {} } });
         const preImg      = document.getElementById('q-pre-img');
         const facePlaceholder = document.getElementById('q-face-placeholder');
 
@@ -2235,8 +2299,8 @@ setInterval(function(){var el=document.getElementById('q-step-error');if(!el)ret
                 try {
                     const fd = new FormData();
                     fd.append('person_image', await toJpeg(userPhoto), 'person.jpg');
-                    fd.append('email', (phoneInput.value || '').trim());   // le direto (runGeneration)
-                    fd.append('whatsapp', '');   // Velaro nao captura telefone
+                    fd.append('email', PL_MODO === 'email' ? (phoneInput.value || '').trim() : '');   // EUA: e-mail
+                    fd.append('whatsapp', PL_MODO === 'whatsapp' ? plVelaroWhats() : '');   // resto: WhatsApp com código do país
                     fd.append('product_name', prodName);
                     // link do produto (sem utm/fbclid, mantém a variante) — o CRM usa nos disparos com link
                     try { var _pu = new URL(location.href); var _pv = _pu.searchParams.get('variant'); fd.append('product_url', _pu.origin + _pu.pathname + (_pv ? '?variant=' + _pv : '')); } catch (_e) {}
@@ -2470,7 +2534,7 @@ setInterval(function(){var el=document.getElementById('q-step-error');if(!el)ret
             var _vPhoneOk = isValidBRPhone();
             var _vFaceFrame = document.getElementById('q-face-frame');
             var _vTerms = document.getElementById('q-accept-terms');
-            if (!_vPhoneOk) { flashError(phoneInput, 'Escribe un correo válido para continuar'); return; }
+            if (!_vPhoneOk) { flashError(phoneInput, PL_MODO === 'whatsapp' ? 'Escribe tu WhatsApp para continuar' : 'Escribe un correo válido para continuar'); return; }
             if (!userPhoto) { flashError(_vFaceFrame, 'Sube o toma tu foto para continuar'); return; }
             if (_vTerms && !_vTerms.checked) { flashError(document.querySelector('.q-terms-row'), 'Acepta los términos para continuar'); return; }
             var _vHint = document.getElementById('q-validation-hint');
